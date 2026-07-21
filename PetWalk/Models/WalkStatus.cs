@@ -4,7 +4,13 @@ using System.Text;
 
 namespace PetWalk.Models
 {
-    internal class WalkStatus
+    public enum WalkStatus
     {
+        Scheduled,
+        Accepted,
+        Declined,
+        InProgress,
+        Completed,
+        Cancelled
     }
 }

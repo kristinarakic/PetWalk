@@ -4,7 +4,19 @@ using System.Text;
 
 namespace PetWalk.Models
 {
-    internal class OwnerObserver
+    public class OwnerObserver : IObserver
     {
+        private Owner _owner;
+        public string LastNotification { get; private set; } = string.Empty;
+
+        public OwnerObserver(Owner owner)
+        {
+            _owner = owner;
+        }
+
+        public void Update(string message)
+        {
+            LastNotification = message;
+        }
     }
 }

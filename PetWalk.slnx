@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="PetWalk.Tests/PetWalk.Tests.csproj" />
   <Project Path="PetWalk/PetWalk.csproj" />
 </Solution>

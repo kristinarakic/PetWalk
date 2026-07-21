@@ -4,7 +4,8 @@ using System.Text;
 
 namespace PetWalk.Models
 {
-    internal interface IObserver
+    public interface IObserver
     {
+        void Update(string message);
     }
 }
