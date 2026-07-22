@@ -1,6 +1,7 @@
 ﻿using PetWalk.Data;
 using PetWalk.Helpers;
 using PetWalk.Models;
+using PetWalk.Repositories;
 using PetWalk.Services;
 using System;
 using System.Collections.Generic;
