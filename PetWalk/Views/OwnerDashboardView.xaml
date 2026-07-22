@@ -1,0 +1,218 @@
+﻿<UserControl x:Class="PetWalk.Views.OwnerDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Background="#F5F5F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#4CAF50" Padding="15,0">
+            <Grid>
+                <TextBlock Text="{Binding WelcomeMessage}" Foreground="White"
+                           FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="Logout" Command="{Binding LogoutCommand}"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Background="#388E3C" Foreground="White" Padding="15,5"
+                        Cursor="Hand"/>
+            </Grid>
+        </Border>
+
+        <!-- Tabs -->
+        <TabControl Grid.Row="1" Margin="15">
+
+            <!-- Tab: My Dogs -->
+            <TabItem Header="🐕 My Dogs">
+                <Grid Margin="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+
+                    <DataGrid Grid.Column="0" ItemsSource="{Binding Dogs}"
+                              SelectedItem="{Binding SelectedDog}"
+                              AutoGenerateColumns="False" IsReadOnly="True"
+                              Margin="0,0,15,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="Breed" Binding="{Binding Breed}" Width="*"/>
+                            <DataGridTextColumn Header="Age" Binding="{Binding Age}" Width="60"/>
+                            <DataGridTextColumn Header="Weight" Binding="{Binding Weight}" Width="80"/>
+                            <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Grid.Column="1" Background="White" CornerRadius="5" Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="Add New Dog" FontSize="16" FontWeight="Bold"
+                                       Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Name" Margin="0,0,0,3"/>
+                            <TextBox Text="{Binding NewDogName, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="8" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Breed" Margin="0,0,0,3"/>
+                            <TextBox Text="{Binding NewDogBreed, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="8" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Age" Margin="0,0,0,3"/>
+                            <TextBox Text="{Binding NewDogAge, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="8" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Weight (kg)" Margin="0,0,0,3"/>
+                            <TextBox Text="{Binding NewDogWeight, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="8" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Note" Margin="0,0,0,3"/>
+                            <TextBox Text="{Binding NewDogNote, UpdateSourceTrigger=PropertyChanged}"
+                                     Padding="8" Margin="0,0,0,15"/>
+
+                            <Button Content="Add Dog" Command="{Binding AddDogCommand}"
+                                    Background="#4CAF50" Foreground="White"
+                                    Padding="10,8" Margin="0,0,0,5" Cursor="Hand"/>
+                            <Button Content="Remove Selected" Command="{Binding RemoveDogCommand}"
+                                    Background="#F44336" Foreground="White"
+                                    Padding="10,8" Cursor="Hand"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Tab: Find Walkers -->
+            <TabItem Header="🔍 Find Walkers">
+                <StackPanel Margin="15">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <TextBox Text="{Binding WalkerSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="300" Padding="8" FontSize="14"/>
+                        <Button Content="Search" Command="{Binding SearchWalkersCommand}"
+                                Background="#4CAF50" Foreground="White"
+                                Padding="15,8" Margin="10,0,0,0" Cursor="Hand"/>
+                    </StackPanel>
+
+                    <DataGrid ItemsSource="{Binding Walkers}"
+                              SelectedItem="{Binding SelectedWalker}"
+                              AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="*"/>
+                            <DataGridTextColumn Header="Last Name" Binding="{Binding LastName}" Width="*"/>
+                            <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="*"/>
+                            <DataGridTextColumn Header="Rate ($/hr)" Binding="{Binding HourlyRate, StringFormat=F2}" Width="80"/>
+                            <DataGridTextColumn Header="Rating" Binding="{Binding Rating, StringFormat=F1}" Width="60"/>
+                            <DataGridCheckBoxColumn Header="Available" Binding="{Binding IsAvailable}" Width="70"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Tab: Schedule Walk -->
+            <TabItem Header="📅 Schedule Walk">
+                <Border Background="White" CornerRadius="5" Padding="20" Margin="15"
+                        HorizontalAlignment="Left" Width="400">
+                    <StackPanel>
+                        <TextBlock Text="Schedule a Walk" FontSize="18" FontWeight="Bold"
+                                   Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Select Dog" Margin="0,0,0,3"/>
+                        <ComboBox ItemsSource="{Binding Dogs}"
+                                  SelectedItem="{Binding SelectedDog}"
+                                  DisplayMemberPath="Name"
+                                  Padding="8" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Select Walker" Margin="0,0,0,3"/>
+                        <ComboBox ItemsSource="{Binding Walkers}"
+                                  SelectedItem="{Binding SelectedWalker}"
+                                  DisplayMemberPath="FirstName"
+                                  Padding="8" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Date" Margin="0,0,0,3"/>
+                        <DatePicker SelectedDate="{Binding WalkDate}"
+                                    Padding="8" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Duration (minutes)" Margin="0,0,0,3"/>
+                        <TextBox Text="{Binding WalkDuration, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="8" Margin="0,0,0,20"/>
+
+                        <Button Content="Schedule Walk" Command="{Binding ScheduleWalkCommand}"
+                                Background="#4CAF50" Foreground="White"
+                                FontSize="14" Padding="15,10" Cursor="Hand"/>
+                    </StackPanel>
+                </Border>
+            </TabItem>
+
+            <!-- Tab: Walk History -->
+            <TabItem Header="📋 Walk History">
+                <Grid Margin="15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <DataGrid Grid.Row="0" ItemsSource="{Binding WalkHistory}"
+                              SelectedItem="{Binding SelectedWalk}"
+                              AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Date" Binding="{Binding ScheduledDate, StringFormat=dd.MM.yyyy HH:mm}" Width="150"/>
+                            <DataGridTextColumn Header="Dog" Binding="{Binding Dog.Name}" Width="*"/>
+                            <DataGridTextColumn Header="Walker" Binding="{Binding Walker.FirstName}" Width="*"/>
+                            <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" Width="70"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C}" Width="80"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Grid.Row="1" Background="White" Padding="15" Margin="0,10,0,0"
+                            CornerRadius="5">
+                        <StackPanel>
+                            <TextBlock Text="Leave a Review" FontWeight="Bold" FontSize="14"
+                                       Margin="0,0,0,10"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBlock Text="Rating (1-5): " VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding ReviewRating, UpdateSourceTrigger=PropertyChanged}"
+                                         Width="50" Padding="5"/>
+                            </StackPanel>
+                            <TextBox Text="{Binding ReviewComment, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="60" TextWrapping="Wrap" AcceptsReturn="True"
+                                     Padding="8" Margin="0,0,0,10"/>
+                            <Button Content="Submit Review" Command="{Binding LeaveReviewCommand}"
+                                    Background="#FF9800" Foreground="White"
+                                    Padding="15,8" Cursor="Hand" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Tab: Export & Reports -->
+            <TabItem Header="📊 Export">
+                <StackPanel Margin="15" HorizontalAlignment="Left" Width="400">
+                    <TextBlock Text="Export &amp; Reports" FontSize="18" FontWeight="Bold"
+                               Margin="0,0,0,20"/>
+
+                    <Button Content="Export to JSON" Command="{Binding ExportJsonCommand}"
+                            Background="#2196F3" Foreground="White"
+                            Padding="15,10" Margin="0,0,0,10" Cursor="Hand"/>
+
+                    <Button Content="Export to XML" Command="{Binding ExportXmlCommand}"
+                            Background="#2196F3" Foreground="White"
+                            Padding="15,10" Margin="0,0,0,10" Cursor="Hand"/>
+
+                    <Button Content="Generate Report" Command="{Binding GenerateReportCommand}"
+                            Background="#9C27B0" Foreground="White"
+                            Padding="15,10" Cursor="Hand"/>
+                </StackPanel>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="#E8E8E8" Padding="10,5">
+            <Grid>
+                <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="Gray"/>
+                <TextBlock Text="{Binding NotificationMessage}" FontSize="12"
+                           Foreground="#FF9800" HorizontalAlignment="Right"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
