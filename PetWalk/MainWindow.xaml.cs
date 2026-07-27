@@ -22,7 +22,7 @@ namespace PetWalk
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Database Error");
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.InnerException?.Message}");
             }
 
             ShowLoginView();
@@ -43,7 +43,7 @@ namespace PetWalk
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.InnerException?.Message}");
             }
         }
 
@@ -62,7 +62,7 @@ namespace PetWalk
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.InnerException?.Message}");
             }
         }
 
@@ -81,7 +81,7 @@ namespace PetWalk
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.InnerException?.Message}");
             }
         }
 
@@ -99,7 +99,7 @@ namespace PetWalk
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.InnerException?.Message}");
             }
         }
 
@@ -117,7 +117,7 @@ namespace PetWalk
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}\n{ex.InnerException?.Message}");
             }
         }
     }

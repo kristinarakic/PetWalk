@@ -44,6 +44,8 @@ namespace PetWalk.ViewModels
         private string _statusMessage = string.Empty;
         private string _notificationMessage = string.Empty;
 
+        private string _selectedWalkerDetails = string.Empty;
+
         private OwnerObserver _observer;
 
         public OwnerDashboardViewModel(Owner owner)
@@ -123,7 +125,11 @@ namespace PetWalk.ViewModels
         public Walker? SelectedWalker
         {
             get => _selectedWalker;
-            set => SetProperty(ref _selectedWalker, value);
+            set
+            {
+                SetProperty(ref _selectedWalker, value);
+                LoadWalkerDetails();
+            }
         }
 
         public string WalkerSearchText
@@ -180,6 +186,11 @@ namespace PetWalk.ViewModels
             set => SetProperty(ref _notificationMessage, value);
         }
 
+        public string SelectedWalkerDetails
+        {
+            get => _selectedWalkerDetails;
+            set => SetProperty(ref _selectedWalkerDetails, value);
+        }
         public ICommand AddDogCommand { get; }
         public ICommand RemoveDogCommand { get; }
         public ICommand SearchWalkersCommand { get; }
@@ -224,6 +235,55 @@ namespace PetWalk.ViewModels
         {
             var walks = _walkService.GetWalksByOwnerId(_owner.Id);
             WalkHistory = new ObservableCollection<Walk>(walks);
+        }
+
+        private void LoadWalkerDetails()
+        {
+            if (SelectedWalker == null)
+            {
+                SelectedWalkerDetails = string.Empty;
+                return;
+            }
+
+            using var context = new PetWalkDbContext();
+            var walker = context.Walkers.Find(SelectedWalker.Id);
+            var reviews = context.Reviews
+                .Where(r => r.WalkerId == SelectedWalker.Id)
+                .ToList();
+            var totalWalks = context.Walks
+                .Where(w => w.WalkerId == SelectedWalker.Id && w.Status == WalkStatus.Completed)
+                .Count();
+
+            var details = new System.Text.StringBuilder();
+            details.AppendLine($"Name: {SelectedWalker.GetFullName()}");
+            details.AppendLine($"Location: {SelectedWalker.Location}");
+            details.AppendLine($"Rate: {SelectedWalker.HourlyRate:C}/hr");
+            details.AppendLine($"Completed walks: {totalWalks}");
+            details.AppendLine($"Total reviews: {reviews.Count}");
+
+            if (reviews.Count > 0)
+            {
+                double avg = reviews.Average(r => r.Rating);
+                details.AppendLine($"Average rating: {avg:F1}/5.0");
+                details.AppendLine();
+                details.AppendLine("--- Reviews ---");
+                foreach (var review in reviews.OrderByDescending(r => r.Date))
+                {
+                    var owner = context.Owners.Find(review.OwnerId);
+                    string ownerName = owner?.GetFullName() ?? "Unknown";
+                    details.AppendLine($"★ {review.Rating}/5 by {ownerName} ({review.Date:dd.MM.yyyy})");
+                    if (!string.IsNullOrWhiteSpace(review.Comment))
+                    {
+                        details.AppendLine($"  \"{review.Comment}\"");
+                    }
+                }
+            }
+            else
+            {
+                details.AppendLine("No reviews yet.");
+            }
+
+            SelectedWalkerDetails = details.ToString();
         }
 
         private void ExecuteAddDog(object? parameter)
@@ -315,9 +375,10 @@ namespace PetWalk.ViewModels
             _context.SaveChanges();
 
             LoadWalkHistory();
+            LoadWalkers();
             ReviewComment = string.Empty;
             ReviewRating = 5;
-            StatusMessage = "Review submitted!";
+            StatusMessage = $"Review submitted! Rating: {review.Rating}/5";
         }
 
         private void ExportToJson()
