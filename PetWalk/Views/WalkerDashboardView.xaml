@@ -95,6 +95,56 @@
                 </Grid>
             </TabItem>
 
+            <!-- Tab: My Availability -->
+            <TabItem Header="🕐 My Availability">
+                <Grid Margin="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Slot List -->
+                    <DataGrid Grid.Column="0" ItemsSource="{Binding AvailabilitySlots}"
+                  SelectedItem="{Binding SelectedSlot}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  Margin="0,0,15,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Day" Binding="{Binding Day}" Width="*"/>
+                            <DataGridTextColumn Header="Start" Binding="{Binding StartTime, StringFormat=hh\\:mm}" Width="100"/>
+                            <DataGridTextColumn Header="End" Binding="{Binding EndTime, StringFormat=hh\\:mm}" Width="100"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Add Slot Form -->
+                    <Border Grid.Column="1" Background="White" CornerRadius="5" Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="Add Time Slot" FontSize="16" FontWeight="Bold"
+                           Margin="0,0,0,15"/>
+
+                            <TextBlock Text="Day" Margin="0,0,0,3"/>
+                            <ComboBox ItemsSource="{Binding Days}"
+                          SelectedItem="{Binding SelectedDay}"
+                          Padding="8" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="Start Time (HH:mm)" Margin="0,0,0,3"/>
+                            <TextBox Text="{Binding StartTime, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="8" Margin="0,0,0,10"/>
+
+                            <TextBlock Text="End Time (HH:mm)" Margin="0,0,0,3"/>
+                            <TextBox Text="{Binding EndTime, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="8" Margin="0,0,0,15"/>
+
+                            <Button Content="Add Slot" Command="{Binding AddSlotCommand}"
+                        Background="#4CAF50" Foreground="White"
+                        Padding="10,8" Margin="0,0,0,5" Cursor="Hand"/>
+                            <Button Content="Remove Selected" Command="{Binding RemoveSlotCommand}"
+                        Background="#F44336" Foreground="White"
+                        Padding="10,8" Cursor="Hand"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
             <!-- Tab: Export & Reports -->
             <TabItem Header="📊 Export">
                 <StackPanel Margin="15" HorizontalAlignment="Left" Width="400">

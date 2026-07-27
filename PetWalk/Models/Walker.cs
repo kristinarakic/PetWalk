@@ -18,7 +18,7 @@ namespace PetWalk.Models
 
         public List<Walk> AssignedWalks { get; set; } = new List<Walk>();
         public List<Review> Reviews { get; set; } = new List<Review>();
-
+        public List<AvailabilitySlot> AvailabilitySlots { get; set; } = new List<AvailabilitySlot>();
         public Walker()
         {
             UserType = "Walker";

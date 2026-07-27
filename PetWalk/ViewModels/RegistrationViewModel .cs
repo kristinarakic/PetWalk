@@ -1,4 +1,4 @@
-﻿using PetWalk.Helpers;
+﻿    using PetWalk.Helpers;
 using PetWalk.Models;
 using PetWalk.Services;
 using System;
@@ -98,6 +98,7 @@ namespace PetWalk.ViewModels
         public ICommand GoToLoginCommand { get; }
 
         public event Action? NavigateToLogin;
+        public event Action<User>? RegistrationSuccessful;
 
         public RegistrationViewModel()
         {
@@ -151,7 +152,11 @@ namespace PetWalk.ViewModels
 
             if (success)
             {
-                SuccessMessage = "Registration successful! You can now login.";
+                var loggedIn = authService.Login(newUser.Email, newUser.Password);
+                if (loggedIn != null)
+                {
+                    RegistrationSuccessful?.Invoke(loggedIn);
+                }
             }
             else
             {

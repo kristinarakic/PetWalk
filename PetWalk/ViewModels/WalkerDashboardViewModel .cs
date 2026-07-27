@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows.Input;
+using System.Linq;
 
 namespace PetWalk.ViewModels
 {
@@ -23,6 +24,11 @@ namespace PetWalk.ViewModels
         private Walk? _selectedHistoryWalk;
         private bool _isAvailable;
         private string _statusMessage = string.Empty;
+        private ObservableCollection<AvailabilitySlot> _availabilitySlots = new();
+        private AvailabilitySlot? _selectedSlot;
+        private DayOfWeek _selectedDay = DayOfWeek.Monday;
+        private string _startTime = "08:00";
+        private string _endTime = "16:00";
 
         public WalkerDashboardViewModel(Walker walker)
         {
@@ -40,6 +46,8 @@ namespace PetWalk.ViewModels
             ExportXmlCommand = new RelayCommand(_ => ExportToXml());
             GenerateReportCommand = new RelayCommand(_ => GenerateReport());
             LogoutCommand = new RelayCommand(_ => OnLogout());
+            AddSlotCommand = new RelayCommand(ExecuteAddSlot, _ => !string.IsNullOrWhiteSpace(StartTime) && !string.IsNullOrWhiteSpace(EndTime));
+            RemoveSlotCommand = new RelayCommand(ExecuteRemoveSlot, _ => SelectedSlot != null);
 
             LoadData();
         }
@@ -95,6 +103,8 @@ namespace PetWalk.ViewModels
         public ICommand ExportXmlCommand { get; }
         public ICommand GenerateReportCommand { get; }
         public ICommand LogoutCommand { get; }
+        public ICommand AddSlotCommand { get; }
+        public ICommand RemoveSlotCommand { get; }
 
         public event Action? LogoutRequested;
 
@@ -102,6 +112,7 @@ namespace PetWalk.ViewModels
         {
             LoadPendingWalks();
             LoadWalkHistory();
+            LoadAvailabilitySlots();
         }
 
         private void LoadPendingWalks()
@@ -201,6 +212,100 @@ namespace PetWalk.ViewModels
         {
             AuthService.GetInstance().Logout();
             LogoutRequested?.Invoke();
+        }
+
+        public ObservableCollection<AvailabilitySlot> AvailabilitySlots
+        {
+            get => _availabilitySlots;
+            set => SetProperty(ref _availabilitySlots, value);
+        }
+
+        public AvailabilitySlot? SelectedSlot
+        {
+            get => _selectedSlot;
+            set => SetProperty(ref _selectedSlot, value);
+        }
+
+        public DayOfWeek SelectedDay
+        {
+            get => _selectedDay;
+            set => SetProperty(ref _selectedDay, value);
+        }
+
+        public string StartTime
+        {
+            get => _startTime;
+            set => SetProperty(ref _startTime, value);
+        }
+
+        public string EndTime
+        {
+            get => _endTime;
+            set => SetProperty(ref _endTime, value);
+        }
+
+        public List<DayOfWeek> Days { get; } = new List<DayOfWeek>
+        {
+            DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+            DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
+        };
+
+        private void ExecuteAddSlot(object? parameter)
+        {
+            if (!TimeSpan.TryParse(StartTime, out var start) ||
+         !TimeSpan.TryParse(EndTime, out var end))
+            {
+                StatusMessage = "Invalid time format. Use HH:mm";
+                return;
+            }
+
+            if (start >= end)
+            {
+                StatusMessage = "Start time must be before end time.";
+                return;
+            }
+
+            var slot = new AvailabilitySlot
+            {
+                WalkerId = _walker.Id,
+                Day = SelectedDay,
+                StartTime = start,
+                EndTime = end
+            };
+
+            using var context = new PetWalkDbContext();
+            context.AvailabilitySlots.Add(slot);
+            context.SaveChanges();
+
+            LoadAvailabilitySlots();
+            StatusMessage = $"Slot added: {slot.Display}";
+        }
+
+        private void ExecuteRemoveSlot(object? parameter)
+        {
+            if (SelectedSlot == null) return;
+
+            using var context = new PetWalkDbContext();
+            var slot = context.AvailabilitySlots.Find(SelectedSlot.Id);
+            if (slot != null)
+            {
+                context.AvailabilitySlots.Remove(slot);
+                context.SaveChanges();
+            }
+
+            LoadAvailabilitySlots();
+            StatusMessage = "Slot removed.";
+        }
+        private void LoadAvailabilitySlots()
+        {
+            using var context = new PetWalkDbContext();
+            var slots = context.AvailabilitySlots
+                .Where(a => a.WalkerId == _walker.Id)
+                .ToList()
+                .OrderBy(a => a.Day)
+                .ThenBy(a => a.StartTime)
+                .ToList();
+            AvailabilitySlots = new ObservableCollection<AvailabilitySlot>(slots);
         }
     }
 }

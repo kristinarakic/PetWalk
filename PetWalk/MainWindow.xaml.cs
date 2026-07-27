@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using PetWalk.Data;
 using PetWalk.Models;
 using PetWalk.ViewModels;
@@ -12,9 +13,16 @@ namespace PetWalk
         {
             InitializeComponent();
 
-            using (var context = new PetWalkDbContext())
+            try
             {
-                context.Database.EnsureCreated();
+                using (var context = new PetWalkDbContext())
+                {
+                    context.Database.EnsureCreated();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Database Error");
             }
 
             ShowLoginView();
@@ -22,59 +30,95 @@ namespace PetWalk
 
         private void ShowLoginView()
         {
-            var loginView = new LoginView();
-            var loginViewModel = new LoginViewModel();
+            try
+            {
+                var loginView = new LoginView();
+                var loginViewModel = new LoginViewModel();
 
-            loginViewModel.LoginSuccessful += OnLoginSuccessful;
-            loginViewModel.NavigateToRegister += ShowRegistrationView;
+                loginViewModel.LoginSuccessful += OnLoginSuccessful;
+                loginViewModel.NavigateToRegister += ShowRegistrationView;
 
-            loginView.DataContext = loginViewModel;
-            MainContent.Content = loginView;
+                loginView.DataContext = loginViewModel;
+                MainContent.Content = loginView;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+            }
         }
 
         private void ShowRegistrationView()
         {
-            var registrationView = new RegistrationView();
-            var registrationViewModel = new RegistrationViewModel();
+            try
+            {
+                var registrationView = new RegistrationView();
+                var registrationViewModel = new RegistrationViewModel();
 
-            registrationViewModel.NavigateToLogin += ShowLoginView;
+                registrationViewModel.NavigateToLogin += ShowLoginView;
+                registrationViewModel.RegistrationSuccessful += OnLoginSuccessful;
 
-            registrationView.DataContext = registrationViewModel;
-            MainContent.Content = registrationView;
+                registrationView.DataContext = registrationViewModel;
+                MainContent.Content = registrationView;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+            }
         }
 
         private void OnLoginSuccessful(User user)
         {
-            if (user is Owner owner)
+            try
             {
-                ShowOwnerDashboard(owner);
+                if (user is Owner owner)
+                {
+                    ShowOwnerDashboard(owner);
+                }
+                else if (user is Walker walker)
+                {
+                    ShowWalkerDashboard(walker);
+                }
             }
-            else if (user is Walker walker)
+            catch (Exception ex)
             {
-                ShowWalkerDashboard(walker);
+                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
             }
         }
 
         private void ShowOwnerDashboard(Owner owner)
         {
-            var view = new OwnerDashboardView();
-            var viewModel = new OwnerDashboardViewModel(owner);
+            try
+            {
+                var view = new OwnerDashboardView();
+                var viewModel = new OwnerDashboardViewModel(owner);
 
-            viewModel.LogoutRequested += ShowLoginView;
+                viewModel.LogoutRequested += ShowLoginView;
 
-            view.DataContext = viewModel;
-            MainContent.Content = view;
+                view.DataContext = viewModel;
+                MainContent.Content = view;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+            }
         }
 
         private void ShowWalkerDashboard(Walker walker)
         {
-            var view = new WalkerDashboardView();
-            var viewModel = new WalkerDashboardViewModel(walker);
+            try
+            {
+                var view = new WalkerDashboardView();
+                var viewModel = new WalkerDashboardViewModel(walker);
 
-            viewModel.LogoutRequested += ShowLoginView;
+                viewModel.LogoutRequested += ShowLoginView;
 
-            view.DataContext = viewModel;
-            MainContent.Content = view;
+                view.DataContext = viewModel;
+                MainContent.Content = view;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message + "\n\n" + ex.InnerException?.Message, "Error");
+            }
         }
     }
 }

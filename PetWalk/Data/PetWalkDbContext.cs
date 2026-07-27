@@ -14,6 +14,7 @@ namespace PetWalk.Data
         public DbSet<Dog> Dogs { get; set; }
         public DbSet<Walk> Walks { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<AvailabilitySlot> AvailabilitySlots { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -90,6 +91,14 @@ namespace PetWalk.Data
             modelBuilder.Entity<Walker>()
                 .Property(w => w.HourlyRate)
                 .HasColumnType("decimal(10,2)");
+
+            // Walker -> AvailabilitySlots
+            modelBuilder.Entity<AvailabilitySlot>()
+                .HasOne(a => a.Walker)
+                .WithMany(w => w.AvailabilitySlots)
+                .HasForeignKey(a => a.WalkerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
     }
 }
