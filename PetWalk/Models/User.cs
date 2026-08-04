@@ -32,6 +32,9 @@ namespace PetWalk.Models
 
         public string UserType { get; set; } = string.Empty;
 
+        [MaxLength(100)]
+        public string Location { get; set; } = string.Empty;
+
         public string GetFullName()
         {
             return $"{FirstName} {LastName}";

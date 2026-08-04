@@ -33,7 +33,7 @@
                         Background="#4CAF50" Foreground="White"
                         FontSize="16" FontWeight="Bold"
                         Padding="15,10" Margin="0,0,0,15"
-                        Cursor="Hand"/>
+                        Cursor="Hand" IsDefault="True"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBlock Text="Don't have an account? " Foreground="Gray"/>

@@ -36,18 +36,18 @@ namespace PetWalk.Services
             return _instance;
         }
 
-        public User? Login(string email, string password)
+        public (User? user, string error) Login(string email, string password)
         {
             var user = _userRepository.GetByEmail(email);
 
             if (user == null)
-                return null;
+                return (null, "Account not found. Please register first.");
 
             if (user.Password != password)
-                return null;
+                return (null, "Incorrect credentials.");
 
             _currentUser = user;
-            return user;
+            return (user, null);
         }
 
         public bool Register(User user)

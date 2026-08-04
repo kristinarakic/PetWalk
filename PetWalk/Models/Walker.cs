@@ -7,9 +7,6 @@ namespace PetWalk.Models
 {
     public class Walker : User
     {
-        [MaxLength(100)]
-        public string Location { get; set; } = string.Empty;
-
         public decimal HourlyRate { get; set; }
 
         public double Rating { get; set; }

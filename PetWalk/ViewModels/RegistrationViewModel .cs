@@ -152,10 +152,10 @@ namespace PetWalk.ViewModels
 
             if (success)
             {
-                var loggedIn = authService.Login(newUser.Email, newUser.Password);
-                if (loggedIn != null)
+                var (loggedInUser, error) = authService.Login(newUser.Email, newUser.Password);
+                if (loggedInUser != null)
                 {
-                    RegistrationSuccessful?.Invoke(loggedIn);
+                    RegistrationSuccessful?.Invoke(loggedInUser);
                 }
             }
             else

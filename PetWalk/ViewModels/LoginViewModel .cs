@@ -55,11 +55,11 @@ namespace PetWalk.ViewModels
             ErrorMessage = string.Empty;
 
             var authService = AuthService.GetInstance();
-            var user = authService.Login(Email, Password);
+            var (user, error) = authService.Login(Email, Password);
 
             if (user == null)
             {
-                ErrorMessage = "Invalid email or password.";
+                ErrorMessage = error ?? "Login failed.";
                 return;
             }
 
