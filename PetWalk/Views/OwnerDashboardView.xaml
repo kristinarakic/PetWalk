@@ -138,34 +138,41 @@
             <!-- Tab: Schedule Walk -->
             <TabItem Header="📅 Schedule Walk">
                 <Border Background="White" CornerRadius="5" Padding="20" Margin="15"
-                        HorizontalAlignment="Left" Width="400">
+            HorizontalAlignment="Left" Width="400">
                     <StackPanel>
                         <TextBlock Text="Schedule a Walk" FontSize="18" FontWeight="Bold"
-                                   Margin="0,0,0,20"/>
+                       Margin="0,0,0,20"/>
 
                         <TextBlock Text="Select Dog" Margin="0,0,0,3"/>
                         <ComboBox ItemsSource="{Binding Dogs}"
-                                  SelectedItem="{Binding SelectedDog}"
-                                  DisplayMemberPath="Name"
-                                  Padding="8" Margin="0,0,0,10"/>
+                      SelectedItem="{Binding SelectedDog}"
+                      DisplayMemberPath="Name"
+                      Padding="8" Margin="0,0,0,10"/>
 
                         <TextBlock Text="Select Walker" Margin="0,0,0,3"/>
                         <ComboBox ItemsSource="{Binding Walkers}"
-                                  SelectedItem="{Binding SelectedWalker}"
-                                  DisplayMemberPath="FirstName"
-                                  Padding="8" Margin="0,0,0,10"/>
-
-                        <TextBlock Text="Date" Margin="0,0,0,3"/>
-                        <DatePicker SelectedDate="{Binding WalkDate}"
-                                    Padding="8" Margin="0,0,0,10"/>
+                      SelectedItem="{Binding SelectedWalker}"
+                      DisplayMemberPath="FirstName"
+                      Padding="8" Margin="0,0,0,10"/>
 
                         <TextBlock Text="Duration (minutes)" Margin="0,0,0,3"/>
                         <TextBox Text="{Binding WalkDuration, UpdateSourceTrigger=PropertyChanged}"
-                                 Padding="8" Margin="0,0,0,20"/>
+                     Padding="8" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Date" Margin="0,0,0,3"/>
+                        <DatePicker SelectedDate="{Binding WalkDate}"
+                            DisplayDateStart="{x:Static sys:DateTime.Now}"
+                            Padding="8" Margin="0,0,0,10"
+                            xmlns:sys="clr-namespace:System;assembly=mscorlib"/>
+
+                        <TextBlock Text="Available Time Slots" Margin="0,0,0,3"/>
+                        <ComboBox ItemsSource="{Binding AvailableTimeSlots}"
+                      SelectedItem="{Binding SelectedTimeSlot}"
+                      Padding="8" Margin="0,0,0,20"/>
 
                         <Button Content="Schedule Walk" Command="{Binding ScheduleWalkCommand}"
-                                Background="#4CAF50" Foreground="White"
-                                FontSize="14" Padding="15,10" Cursor="Hand"/>
+                    Background="#4CAF50" Foreground="White"
+                    FontSize="14" Padding="15,10" Cursor="Hand"/>
                     </StackPanel>
                 </Border>
             </TabItem>

@@ -26,7 +26,7 @@ namespace PetWalk.ViewModels
         private string _statusMessage = string.Empty;
         private ObservableCollection<AvailabilitySlot> _availabilitySlots = new();
         private AvailabilitySlot? _selectedSlot;
-        private DayOfWeek _selectedDay = DayOfWeek.Monday;
+        private DateTime _slotDate = DateTime.Now.AddDays(1);
         private string _startTime = "08:00";
         private string _endTime = "16:00";
 
@@ -226,10 +226,10 @@ namespace PetWalk.ViewModels
             set => SetProperty(ref _selectedSlot, value);
         }
 
-        public DayOfWeek SelectedDay
+        public DateTime SlotDate
         {
-            get => _selectedDay;
-            set => SetProperty(ref _selectedDay, value);
+            get => _slotDate;
+            set => SetProperty(ref _slotDate, value);
         }
 
         public string StartTime
@@ -244,16 +244,10 @@ namespace PetWalk.ViewModels
             set => SetProperty(ref _endTime, value);
         }
 
-        public List<DayOfWeek> Days { get; } = new List<DayOfWeek>
-        {
-            DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
-            DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
-        };
-
         private void ExecuteAddSlot(object? parameter)
         {
             if (!TimeSpan.TryParse(StartTime, out var start) ||
-         !TimeSpan.TryParse(EndTime, out var end))
+                !TimeSpan.TryParse(EndTime, out var end))
             {
                 StatusMessage = "Invalid time format. Use HH:mm";
                 return;
@@ -265,10 +259,16 @@ namespace PetWalk.ViewModels
                 return;
             }
 
+            if (SlotDate.Date < DateTime.Now.Date)
+            {
+                StatusMessage = "Cannot add slots in the past.";
+                return;
+            }
+
             var slot = new AvailabilitySlot
             {
                 WalkerId = _walker.Id,
-                Day = SelectedDay,
+                Date = SlotDate.Date,
                 StartTime = start,
                 EndTime = end
             };
@@ -302,7 +302,8 @@ namespace PetWalk.ViewModels
             var slots = context.AvailabilitySlots
                 .Where(a => a.WalkerId == _walker.Id)
                 .ToList()
-                .OrderBy(a => a.Day)
+                .Where(a => a.Date >= DateTime.Now.Date)
+                .OrderBy(a => a.Date)
                 .ThenBy(a => a.StartTime)
                 .ToList();
             AvailabilitySlots = new ObservableCollection<AvailabilitySlot>(slots);

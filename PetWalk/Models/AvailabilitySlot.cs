@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PetWalk.Models
 {
@@ -20,9 +21,12 @@ namespace PetWalk.Models
         [Required]
         public TimeSpan EndTime { get; set; }
 
+        [Required]
+        public DateTime Date { get; set; }
+
         [ForeignKey("WalkerId")]
         public Walker? Walker { get; set; }
 
-        public string Display => $"{Day}: {StartTime:hh\\:mm} - {EndTime:hh\\:mm}";
+        public string Display => $"{Date:dd.MM.yyyy} ({Date.DayOfWeek}): {StartTime:hh\\:mm} - {EndTime:hh\\:mm}";
     }
 }

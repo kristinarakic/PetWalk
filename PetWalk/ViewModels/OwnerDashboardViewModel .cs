@@ -46,6 +46,9 @@ namespace PetWalk.ViewModels
 
         private string _selectedWalkerDetails = string.Empty;
 
+        private ObservableCollection<string> _availableTimeSlots = new();
+        private string? _selectedTimeSlot;
+
         private OwnerObserver _observer;
 
         public OwnerDashboardViewModel(Owner owner)
@@ -129,6 +132,7 @@ namespace PetWalk.ViewModels
             {
                 SetProperty(ref _selectedWalker, value);
                 LoadWalkerDetails();
+                LoadAvailableTimeSlots();
             }
         }
 
@@ -153,13 +157,21 @@ namespace PetWalk.ViewModels
         public DateTime WalkDate
         {
             get => _walkDate;
-            set => SetProperty(ref _walkDate, value);
+            set
+            {
+                SetProperty(ref _walkDate, value);
+                LoadAvailableTimeSlots();
+            }
         }
 
         public int WalkDuration
         {
             get => _walkDuration;
-            set => SetProperty(ref _walkDuration, value);
+            set
+            {
+                SetProperty(ref _walkDuration, value);
+                LoadAvailableTimeSlots();
+            }
         }
 
         public int ReviewRating
@@ -191,6 +203,18 @@ namespace PetWalk.ViewModels
             get => _selectedWalkerDetails;
             set => SetProperty(ref _selectedWalkerDetails, value);
         }
+        public ObservableCollection<string> AvailableTimeSlots
+        {
+            get => _availableTimeSlots;
+            set => SetProperty(ref _availableTimeSlots, value);
+        }
+
+        public string? SelectedTimeSlot
+        {
+            get => _selectedTimeSlot;
+            set => SetProperty(ref _selectedTimeSlot, value);
+        }
+
         public ICommand AddDogCommand { get; }
         public ICommand RemoveDogCommand { get; }
         public ICommand SearchWalkersCommand { get; }
@@ -264,7 +288,7 @@ namespace PetWalk.ViewModels
             if (reviews.Count > 0)
             {
                 double avg = reviews.Average(r => r.Rating);
-                details.AppendLine($"Average rating: {avg:F1}/5.0");
+                details.AppendLine($"Average rating: {avg.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}/5.0");
                 details.AppendLine();
                 details.AppendLine("--- Reviews ---");
                 foreach (var review in reviews.OrderByDescending(r => r.Date))
@@ -323,12 +347,26 @@ namespace PetWalk.ViewModels
 
         private bool CanScheduleWalk(object? parameter)
         {
-            return SelectedWalker != null && SelectedDog != null && WalkDate > DateTime.Now;
+            return SelectedWalker != null &&
+               SelectedDog != null &&
+               SelectedTimeSlot != null &&
+               SelectedTimeSlot != "No availability for this day" &&
+               SelectedTimeSlot != "No available slots";
         }
 
         private void ExecuteScheduleWalk(object? parameter)
         {
-            if (SelectedWalker == null || SelectedDog == null) return;
+            if (SelectedWalker == null || SelectedDog == null || SelectedTimeSlot == null) return;
+
+            if (SelectedTimeSlot == "No availability for this day" ||
+                SelectedTimeSlot == "No available slots")
+            {
+                StatusMessage = "Please select a valid time slot.";
+                return;
+            }
+
+            var time = TimeSpan.Parse(SelectedTimeSlot);
+            var scheduledDate = WalkDate.Date.Add(time);
 
             decimal price = SelectedWalker.HourlyRate * (WalkDuration / 60.0m);
 
@@ -336,7 +374,7 @@ namespace PetWalk.ViewModels
                 _owner.Id,
                 SelectedWalker.Id,
                 SelectedDog.Id,
-                WalkDate,
+                scheduledDate,
                 WalkDuration,
                 price
             );
@@ -347,7 +385,77 @@ namespace PetWalk.ViewModels
             NotificationMessage = _observer.LastNotification;
 
             LoadWalkHistory();
-            StatusMessage = "Walk scheduled successfully!";
+            LoadAvailableTimeSlots();
+            StatusMessage = $"Walk scheduled for {scheduledDate:dd.MM.yyyy HH:mm}!";
+        }
+
+        private void LoadAvailableTimeSlots()
+        {
+            AvailableTimeSlots.Clear();
+            SelectedTimeSlot = null;
+
+            if (SelectedWalker == null) return;
+
+            using var context = new PetWalkDbContext();
+
+            var selectedDate = WalkDate.Date;
+
+            var slots = context.AvailabilitySlots
+                .Where(a => a.WalkerId == SelectedWalker.Id)
+                .ToList()
+                .Where(a => a.Date.Date == selectedDate)
+                .ToList();
+
+            if (slots.Count == 0)
+            {
+                AvailableTimeSlots.Add("No availability for this date");
+                return;
+            }
+
+            var existingWalks = context.Walks
+                .Where(w => w.WalkerId == SelectedWalker.Id)
+                .ToList()
+                .Where(w => w.ScheduledDate.Date == selectedDate &&
+                            (w.Status == WalkStatus.Scheduled ||
+                             w.Status == WalkStatus.Accepted ||
+                             w.Status == WalkStatus.InProgress))
+                .ToList();
+
+            var available = new List<string>();
+
+            foreach (var slot in slots)
+            {
+                var current = slot.StartTime;
+                while (current.Add(TimeSpan.FromMinutes(WalkDuration)) <= slot.EndTime)
+                {
+                    var slotStart = selectedDate.Add(current);
+                    var slotEnd = slotStart.AddMinutes(WalkDuration);
+
+                    bool isBusy = existingWalks.Any(w =>
+                        slotStart < w.ScheduledDate.AddMinutes(w.Duration) &&
+                        slotEnd > w.ScheduledDate
+                    );
+
+                    if (!isBusy && slotStart > DateTime.Now)
+                    {
+                        available.Add(current.ToString(@"hh\:mm"));
+                    }
+
+                    current = current.Add(TimeSpan.FromMinutes(30));
+                }
+            }
+
+            if (available.Count == 0)
+            {
+                AvailableTimeSlots.Add("No available slots");
+            }
+            else
+            {
+                foreach (var time in available)
+                {
+                    AvailableTimeSlots.Add(time);
+                }
+            }
         }
 
         private bool CanLeaveReview(object? parameter)
