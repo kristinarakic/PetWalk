@@ -313,26 +313,14 @@ namespace PetWalk.ViewModels
             }
         }
 
-        protected override void ExportToJson()
+        protected override List<Walk> GetUserWalks()
         {
-            var walks = _walkService.GetWalksByWalkerId(_walker.Id);
-            _serializationService.ExportToJson(walks, "walker_walks_export.json");
-            StatusMessage = "Data exported to walker_walks_export.json";
+            return _walkService.GetWalksByOwnerId(_walker.Id);
         }
 
-        protected override void ExportToXml()
+        protected override User GetCurrentUser()
         {
-            var walks = _walkService.GetWalksByWalkerId(_walker.Id);
-            _serializationService.ExportToXml(walks, "walker_walks_export.xml");
-            StatusMessage = "Data exported to walker_walks_export.xml";
-        }
-
-        protected override void GenerateReport()
-        {
-            var walks = _walkService.GetWalksByWalkerId(_walker.Id);
-            string report = _reportService.GenerateWalkReport(walks, _walker);
-            _reportService.SaveReportToFile(report, "walker_report.txt");
-            StatusMessage = "Report generated: walker_report.txt";
+            return _walker;
         }
     }
 }

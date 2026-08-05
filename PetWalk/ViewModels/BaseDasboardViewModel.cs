@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 using PetWalk.Helpers;
 using PetWalk.Models;
@@ -72,6 +73,10 @@ namespace PetWalk.ViewModels
 
         public event Action? LogoutRequested;
 
+        protected abstract List<Walk> GetUserWalks();
+        protected abstract User GetCurrentUser();
+        protected abstract void ExecuteSaveProfile(object? parameter);
+
         protected void LoadProfile(User user)
         {
             ProfileFirstName = user.FirstName;
@@ -80,10 +85,74 @@ namespace PetWalk.ViewModels
             ProfileLocation = user.Location;
         }
 
-        protected abstract void ExecuteSaveProfile(object? parameter);
-        protected abstract void ExportToJson();
-        protected abstract void ExportToXml();
-        protected abstract void GenerateReport();
+        private void ExportToJson()
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = "walks_export",
+                DefaultExt = ".json",
+                Filter = "JSON files (*.json)|*.json"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var walks = GetUserWalks();
+                var dtos = WalksToDtos(walks);
+                _serializationService.ExportToJson(dtos, dialog.FileName);
+                StatusMessage = $"Data exported to {dialog.FileName}";
+            }
+        }
+
+        private void ExportToXml()
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = "walks_export",
+                DefaultExt = ".xml",
+                Filter = "XML files (*.xml)|*.xml"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var walks = GetUserWalks();
+                var dtos = WalksToDtos(walks);
+                _serializationService.ExportToXml(dtos, dialog.FileName);
+                StatusMessage = $"Data exported to {dialog.FileName}";
+            }
+        }
+
+        private void GenerateReport()
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = "walk_report",
+                DefaultExt = ".pdf",
+                Filter = "PDF files (*.pdf)|*.pdf"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var walks = GetUserWalks();
+                var user = GetCurrentUser();
+                _reportService.GeneratePdfReport(walks, user, dialog.FileName);
+                StatusMessage = $"PDF report saved to {dialog.FileName}";
+            }
+        }
+
+        private List<WalkDto> WalksToDtos(List<Walk> walks)
+        {
+            return walks.Select(w => new WalkDto
+            {
+                Id = w.Id,
+                ScheduledDate = w.ScheduledDate,
+                Duration = w.Duration,
+                Status = w.Status.ToString(),
+                Price = w.Price,
+                OwnerName = w.Owner?.GetFullName() ?? "",
+                WalkerName = w.Walker?.GetFullName() ?? "",
+                DogName = w.Dog?.Name ?? ""
+            }).ToList();
+        }
 
         protected void OnLogout()
         {
