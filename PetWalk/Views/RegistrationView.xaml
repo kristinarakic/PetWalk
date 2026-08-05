@@ -58,7 +58,7 @@
                     <!-- Walker only fields -->
                     <StackPanel x:Name="WalkerFields"
                                 Visibility="{Binding ShowWalkerFields, Converter={StaticResource BoolToVisConverter}}">
-                        <TextBlock Text="Hourly Rate ($)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBlock Text="Hourly Rate (€)" FontWeight="SemiBold" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding HourlyRate, UpdateSourceTrigger=PropertyChanged}"
                                  Padding="10" FontSize="14" Margin="0,0,0,15"/>
                     </StackPanel>

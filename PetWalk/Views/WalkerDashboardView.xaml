@@ -48,7 +48,7 @@
                             <DataGridTextColumn Header="Owner" Binding="{Binding Owner.FirstName}" Width="*"/>
                             <DataGridTextColumn Header="Dog" Binding="{Binding Dog.Name}" Width="*"/>
                             <DataGridTextColumn Header="Duration (min)" Binding="{Binding Duration}" Width="100"/>
-                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C}" Width="80"/>
+                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0:F2}€}" Width="80"/>
                         </DataGrid.Columns>
                     </DataGrid>
 
@@ -80,7 +80,7 @@
                             <DataGridTextColumn Header="Dog" Binding="{Binding Dog.Name}" Width="*"/>
                             <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" Width="80"/>
                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
-                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C}" Width="80"/>
+                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0:F2}€}" Width="80"/>
                         </DataGrid.Columns>
                     </DataGrid>
 

@@ -113,7 +113,7 @@
                                 <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="*"/>
                                 <DataGridTextColumn Header="Last Name" Binding="{Binding LastName}" Width="*"/>
                                 <DataGridTextColumn Header="Location" Binding="{Binding Location}" Width="*"/>
-                                <DataGridTextColumn Header="Rate ($/hr)" Binding="{Binding HourlyRate, StringFormat=F2}" Width="80"/>
+                                <DataGridTextColumn Header="Rate ($/hr)" Binding="{Binding HourlyRate, StringFormat={}{0:F2}€}" Width="80"/>
                                 <DataGridTextColumn Header="Rating" Binding="{Binding Rating, StringFormat=F1}" Width="60"/>
                                 <DataGridCheckBoxColumn Header="Available" Binding="{Binding IsAvailable}" Width="70"/>
                             </DataGrid.Columns>
@@ -194,7 +194,7 @@
                             <DataGridTextColumn Header="Walker" Binding="{Binding Walker.FirstName}" Width="*"/>
                             <DataGridTextColumn Header="Duration" Binding="{Binding Duration}" Width="70"/>
                             <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
-                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=C}" Width="80"/>
+                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0:F2}€}" Width="80"/>
                         </DataGrid.Columns>
                     </DataGrid>
 

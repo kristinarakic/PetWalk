@@ -25,7 +25,7 @@ namespace PetWalk.Services
             report.AppendLine($"Completed: {walks.Count(w => w.Status == WalkStatus.Completed)}");
             report.AppendLine($"Scheduled: {walks.Count(w => w.Status == WalkStatus.Scheduled)}");
             report.AppendLine($"Cancelled: {walks.Count(w => w.Status == WalkStatus.Cancelled)}");
-            report.AppendLine($"Total spent: {walks.Where(w => w.Status == WalkStatus.Completed).Sum(w => w.Price):C}");
+            report.AppendLine($"Total spent: {walks.Where(w => w.Status == WalkStatus.Completed).Sum(w => w.Price):F2}€");
             report.AppendLine();
 
             report.AppendLine("--- Walk Details ---");
@@ -35,7 +35,7 @@ namespace PetWalk.Services
                 string dogName = walk.Dog?.Name ?? "N/A";
                 string otherUser = walk.Walker?.GetFullName() ?? walk.Owner?.GetFullName() ?? "N/A";
 
-                report.AppendLine($"  {walk.ScheduledDate:dd.MM.yyyy HH:mm} | {dogName} | {otherUser} | {walk.Duration} min | {walk.Status} | {walk.Price:C}");
+                report.AppendLine($"  {walk.ScheduledDate:dd.MM.yyyy HH:mm} | {dogName} | {otherUser} | {walk.Duration} min | {walk.Status} | {walk.Price:F2}€");
             }
 
             report.AppendLine();

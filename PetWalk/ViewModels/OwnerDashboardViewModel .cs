@@ -281,7 +281,7 @@ namespace PetWalk.ViewModels
             var details = new System.Text.StringBuilder();
             details.AppendLine($"Name: {SelectedWalker.GetFullName()}");
             details.AppendLine($"Location: {SelectedWalker.Location}");
-            details.AppendLine($"Rate: {SelectedWalker.HourlyRate:C}/hr");
+            details.AppendLine($"Rate: {SelectedWalker.HourlyRate}€/hr");
             details.AppendLine($"Completed walks: {totalWalks}");
             details.AppendLine($"Total reviews: {reviews.Count}");
 
