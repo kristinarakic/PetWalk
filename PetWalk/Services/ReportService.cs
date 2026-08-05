@@ -18,7 +18,8 @@ namespace PetWalk.Services
         public void GeneratePdfReport(List<Walk> walks, User user, string filePath)
         {
             var completedWalks = walks.Where(w => w.Status == WalkStatus.Completed).ToList();
-            var totalSpent = completedWalks.Sum(w => w.Price);
+            var totalMoney = completedWalks.Sum(w => w.Price);
+            string moneyLabel = user is Walker ? "Total earned" : "Total spent";
 
             Document.Create(container =>
             {
@@ -56,7 +57,7 @@ namespace PetWalk.Services
                             summary.Item().Text($"Completed: {completedWalks.Count}").FontSize(11);
                             summary.Item().Text($"Scheduled: {walks.Count(w => w.Status == WalkStatus.Scheduled)}").FontSize(11);
                             summary.Item().Text($"Cancelled: {walks.Count(w => w.Status == WalkStatus.Cancelled)}").FontSize(11);
-                            summary.Item().Text($"Total spent: {totalSpent:F2}€").FontSize(11).Bold();
+                            summary.Item().Text($"Total spent: {moneyLabel:F2}€").FontSize(11).Bold();
                         });
 
                         // Walk table
