@@ -46,6 +46,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Date" Binding="{Binding ScheduledDate, StringFormat=dd.MM.yyyy HH:mm}" Width="150"/>
                             <DataGridTextColumn Header="Owner" Binding="{Binding Owner.FirstName}" Width="*"/>
+                            <DataGridTextColumn Header="Location" Binding="{Binding Owner.Location}" Width="*"/>
                             <DataGridTextColumn Header="Dog" Binding="{Binding Dog.Name}" Width="*"/>
                             <DataGridTextColumn Header="Duration (min)" Binding="{Binding Duration}" Width="100"/>
                             <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat={}{0:F2}€}" Width="80"/>
@@ -143,6 +144,41 @@
                         </StackPanel>
                     </Border>
                 </Grid>
+            </TabItem>
+
+            <!-- Tab: My Profile -->
+            <TabItem Header="👤 My Profile">
+                <Border Background="White" CornerRadius="5" Padding="20" Margin="15"
+            HorizontalAlignment="Left" Width="400">
+                    <StackPanel>
+                        <TextBlock Text="Edit Profile" FontSize="18" FontWeight="Bold"
+                       Margin="0,0,0,20"/>
+
+                        <TextBlock Text="First Name" Margin="0,0,0,3"/>
+                        <TextBox Text="{Binding ProfileFirstName, UpdateSourceTrigger=PropertyChanged}"
+                     Padding="8" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Last Name" Margin="0,0,0,3"/>
+                        <TextBox Text="{Binding ProfileLastName, UpdateSourceTrigger=PropertyChanged}"
+                     Padding="8" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Phone" Margin="0,0,0,3"/>
+                        <TextBox Text="{Binding ProfilePhone, UpdateSourceTrigger=PropertyChanged}"
+                     Padding="8" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Location" Margin="0,0,0,3"/>
+                        <TextBox Text="{Binding ProfileLocation, UpdateSourceTrigger=PropertyChanged}"
+                     Padding="8" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Hourly Rate (€)" Margin="0,0,0,3"/>
+                        <TextBox Text="{Binding ProfileHourlyRate, UpdateSourceTrigger=PropertyChanged}"
+                     Padding="8" Margin="0,0,0,20"/>
+
+                        <Button Content="Save Changes" Command="{Binding SaveProfileCommand}"
+                    Background="#2196F3" Foreground="White"
+                    Padding="15,10" Cursor="Hand"/>
+                    </StackPanel>
+                </Border>
             </TabItem>
 
             <!-- Tab: Export & Reports -->

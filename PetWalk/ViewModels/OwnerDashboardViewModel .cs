@@ -6,20 +6,18 @@ using PetWalk.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
+using System.Linq;
 using System.Windows.Input;
 
 namespace PetWalk.ViewModels
 {
-    public class OwnerDashboardViewModel : BaseViewModel
+    public class OwnerDashboardViewModel : BaseDashboardViewModel
     {
         private readonly Owner _owner;
-        private readonly WalkService _walkService;
         private readonly DogRepository _dogRepository;
         private readonly UserRepository _userRepository;
-        private readonly SerializationService _serializationService;
-        private readonly ReportService _reportService;
         private readonly PetWalkDbContext _context;
+        private readonly OwnerObserver _observer;
 
         private ObservableCollection<Dog> _dogs = new();
         private Dog? _selectedDog;
@@ -32,34 +30,26 @@ namespace PetWalk.ViewModels
         private ObservableCollection<Walker> _walkers = new();
         private Walker? _selectedWalker;
         private string _walkerSearchText = string.Empty;
+        private string _selectedWalkerDetails = string.Empty;
 
         private ObservableCollection<Walk> _walkHistory = new();
         private Walk? _selectedWalk;
         private DateTime _walkDate = DateTime.Now.AddDays(1);
         private int _walkDuration = 30;
 
-        private int _reviewRating = 5;
-        private string _reviewComment = string.Empty;
-
-        private string _statusMessage = string.Empty;
-        private string _notificationMessage = string.Empty;
-
-        private string _selectedWalkerDetails = string.Empty;
-
         private ObservableCollection<string> _availableTimeSlots = new();
         private string? _selectedTimeSlot;
 
-        private OwnerObserver _observer;
+        private int _reviewRating = 5;
+        private string _reviewComment = string.Empty;
+        private string _notificationMessage = string.Empty;
 
         public OwnerDashboardViewModel(Owner owner)
         {
             _owner = owner;
             _context = new PetWalkDbContext();
-            _walkService = new WalkService(_context);
             _dogRepository = new DogRepository(_context);
             _userRepository = new UserRepository(_context);
-            _serializationService = new SerializationService();
-            _reportService = new ReportService();
             _observer = new OwnerObserver(_owner);
 
             AddDogCommand = new RelayCommand(ExecuteAddDog, _ => !string.IsNullOrWhiteSpace(NewDogName));
@@ -67,15 +57,12 @@ namespace PetWalk.ViewModels
             SearchWalkersCommand = new RelayCommand(_ => LoadWalkers());
             ScheduleWalkCommand = new RelayCommand(ExecuteScheduleWalk, CanScheduleWalk);
             LeaveReviewCommand = new RelayCommand(ExecuteLeaveReview, CanLeaveReview);
-            ExportJsonCommand = new RelayCommand(_ => ExportToJson());
-            ExportXmlCommand = new RelayCommand(_ => ExportToXml());
-            GenerateReportCommand = new RelayCommand(_ => GenerateReport());
-            LogoutCommand = new RelayCommand(_ => OnLogout());
 
             LoadData();
         }
 
-        public string WelcomeMessage => $"Welcome, {_owner.GetFullName()}!";
+        // PROPERTIES 
+        public override string WelcomeMessage => $"Welcome, {_owner.GetFullName()}!";
 
         public ObservableCollection<Dog> Dogs
         {
@@ -142,6 +129,12 @@ namespace PetWalk.ViewModels
             set => SetProperty(ref _walkerSearchText, value);
         }
 
+        public string SelectedWalkerDetails
+        {
+            get => _selectedWalkerDetails;
+            set => SetProperty(ref _selectedWalkerDetails, value);
+        }
+
         public ObservableCollection<Walk> WalkHistory
         {
             get => _walkHistory;
@@ -174,35 +167,6 @@ namespace PetWalk.ViewModels
             }
         }
 
-        public int ReviewRating
-        {
-            get => _reviewRating;
-            set => SetProperty(ref _reviewRating, value);
-        }
-
-        public string ReviewComment
-        {
-            get => _reviewComment;
-            set => SetProperty(ref _reviewComment, value);
-        }
-
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
-
-        public string NotificationMessage
-        {
-            get => _notificationMessage;
-            set => SetProperty(ref _notificationMessage, value);
-        }
-
-        public string SelectedWalkerDetails
-        {
-            get => _selectedWalkerDetails;
-            set => SetProperty(ref _selectedWalkerDetails, value);
-        }
         public ObservableCollection<string> AvailableTimeSlots
         {
             get => _availableTimeSlots;
@@ -215,23 +179,39 @@ namespace PetWalk.ViewModels
             set => SetProperty(ref _selectedTimeSlot, value);
         }
 
+        public int ReviewRating
+        {
+            get => _reviewRating;
+            set => SetProperty(ref _reviewRating, value);
+        }
+
+        public string ReviewComment
+        {
+            get => _reviewComment;
+            set => SetProperty(ref _reviewComment, value);
+        }
+
+        public string NotificationMessage
+        {
+            get => _notificationMessage;
+            set => SetProperty(ref _notificationMessage, value);
+        }
+
+        // COMMANDS 
         public ICommand AddDogCommand { get; }
         public ICommand RemoveDogCommand { get; }
         public ICommand SearchWalkersCommand { get; }
         public ICommand ScheduleWalkCommand { get; }
         public ICommand LeaveReviewCommand { get; }
-        public ICommand ExportJsonCommand { get; }
-        public ICommand ExportXmlCommand { get; }
-        public ICommand GenerateReportCommand { get; }
-        public ICommand LogoutCommand { get; }
 
-        public event Action? LogoutRequested;
+        // LOAD DATA 
 
         private void LoadData()
         {
             LoadDogs();
             LoadWalkers();
             LoadWalkHistory();
+            LoadProfile(_owner);
         }
 
         private void LoadDogs()
@@ -270,7 +250,6 @@ namespace PetWalk.ViewModels
             }
 
             using var context = new PetWalkDbContext();
-            var walker = context.Walkers.Find(SelectedWalker.Id);
             var reviews = context.Reviews
                 .Where(r => r.WalkerId == SelectedWalker.Id)
                 .ToList();
@@ -308,85 +287,6 @@ namespace PetWalk.ViewModels
             }
 
             SelectedWalkerDetails = details.ToString();
-        }
-
-        private void ExecuteAddDog(object? parameter)
-        {
-            var dog = new Dog
-            {
-                Name = NewDogName,
-                Breed = NewDogBreed,
-                Age = NewDogAge,
-                Weight = NewDogWeight,
-                Note = NewDogNote,
-                OwnerId = _owner.Id
-            };
-
-            _dogRepository.Add(dog);
-            LoadDogs();
-
-            NewDogName = string.Empty;
-            NewDogBreed = string.Empty;
-            NewDogAge = 0;
-            NewDogWeight = 0;
-            NewDogNote = string.Empty;
-
-            StatusMessage = $"Dog '{dog.Name}' added successfully!";
-        }
-
-        private void ExecuteRemoveDog(object? parameter)
-        {
-            if (SelectedDog != null)
-            {
-                string name = SelectedDog.Name;
-                _dogRepository.Delete(SelectedDog.Id);
-                LoadDogs();
-                StatusMessage = $"Dog '{name}' removed.";
-            }
-        }
-
-        private bool CanScheduleWalk(object? parameter)
-        {
-            return SelectedWalker != null &&
-               SelectedDog != null &&
-               SelectedTimeSlot != null &&
-               SelectedTimeSlot != "No availability for this day" &&
-               SelectedTimeSlot != "No available slots";
-        }
-
-        private void ExecuteScheduleWalk(object? parameter)
-        {
-            if (SelectedWalker == null || SelectedDog == null || SelectedTimeSlot == null) return;
-
-            if (SelectedTimeSlot == "No availability for this day" ||
-                SelectedTimeSlot == "No available slots")
-            {
-                StatusMessage = "Please select a valid time slot.";
-                return;
-            }
-
-            var time = TimeSpan.Parse(SelectedTimeSlot);
-            var scheduledDate = WalkDate.Date.Add(time);
-
-            decimal price = SelectedWalker.HourlyRate * (WalkDuration / 60.0m);
-
-            var walk = _walkService.ScheduleWalk(
-                _owner.Id,
-                SelectedWalker.Id,
-                SelectedDog.Id,
-                scheduledDate,
-                WalkDuration,
-                price
-            );
-
-            walk.Attach(_observer);
-            walk.Notify();
-
-            NotificationMessage = _observer.LastNotification;
-
-            LoadWalkHistory();
-            LoadAvailableTimeSlots();
-            StatusMessage = $"Walk scheduled for {scheduledDate:dd.MM.yyyy HH:mm}!";
         }
 
         private void LoadAvailableTimeSlots()
@@ -458,6 +358,80 @@ namespace PetWalk.ViewModels
             }
         }
 
+        // ACTIONS
+
+        private void ExecuteAddDog(object? parameter)
+        {
+            var dog = new Dog
+            {
+                Name = NewDogName,
+                Breed = NewDogBreed,
+                Age = NewDogAge,
+                Weight = NewDogWeight,
+                Note = NewDogNote,
+                OwnerId = _owner.Id
+            };
+
+            _dogRepository.Add(dog);
+            LoadDogs();
+
+            NewDogName = string.Empty;
+            NewDogBreed = string.Empty;
+            NewDogAge = 0;
+            NewDogWeight = 0;
+            NewDogNote = string.Empty;
+
+            StatusMessage = $"Dog '{dog.Name}' added successfully!";
+        }
+
+        private void ExecuteRemoveDog(object? parameter)
+        {
+            if (SelectedDog != null)
+            {
+                string name = SelectedDog.Name;
+                _dogRepository.Delete(SelectedDog.Id);
+                LoadDogs();
+                StatusMessage = $"Dog '{name}' removed.";
+            }
+        }
+
+        private bool CanScheduleWalk(object? parameter)
+        {
+            return SelectedWalker != null &&
+                   SelectedDog != null &&
+                   SelectedTimeSlot != null &&
+                   SelectedTimeSlot != "No availability for this date" &&
+                   SelectedTimeSlot != "No available slots";
+        }
+
+        private void ExecuteScheduleWalk(object? parameter)
+        {
+            if (SelectedWalker == null || SelectedDog == null || SelectedTimeSlot == null) return;
+
+            var time = TimeSpan.Parse(SelectedTimeSlot);
+            var scheduledDate = WalkDate.Date.Add(time);
+
+            decimal price = SelectedWalker.HourlyRate * (WalkDuration / 60.0m);
+
+            var walk = _walkService.ScheduleWalk(
+                _owner.Id,
+                SelectedWalker.Id,
+                SelectedDog.Id,
+                scheduledDate,
+                WalkDuration,
+                price
+            );
+
+            walk.Attach(_observer);
+            walk.Notify();
+
+            NotificationMessage = _observer.LastNotification;
+
+            LoadWalkHistory();
+            LoadAvailableTimeSlots();
+            StatusMessage = $"Walk scheduled for {scheduledDate:dd.MM.yyyy HH:mm}!";
+        }
+
         private bool CanLeaveReview(object? parameter)
         {
             return SelectedWalk != null &&
@@ -489,32 +463,50 @@ namespace PetWalk.ViewModels
             StatusMessage = $"Review submitted! Rating: {review.Rating}/5";
         }
 
-        private void ExportToJson()
+        // OVERRIDES 
+
+        protected override void ExecuteSaveProfile(object? parameter)
+        {
+            using var context = new PetWalkDbContext();
+            var user = context.Owners.Find(_owner.Id);
+            if (user != null)
+            {
+                user.FirstName = ProfileFirstName;
+                user.LastName = ProfileLastName;
+                user.Phone = ProfilePhone;
+                user.Location = ProfileLocation;
+                context.SaveChanges();
+
+                _owner.FirstName = ProfileFirstName;
+                _owner.LastName = ProfileLastName;
+                _owner.Phone = ProfilePhone;
+                _owner.Location = ProfileLocation;
+
+                OnPropertyChanged(nameof(WelcomeMessage));
+                StatusMessage = "Profile updated!";
+            }
+        }
+
+        protected override void ExportToJson()
         {
             var walks = _walkService.GetWalksByOwnerId(_owner.Id);
             _serializationService.ExportToJson(walks, "walks_export.json");
             StatusMessage = "Data exported to walks_export.json";
         }
 
-        private void ExportToXml()
+        protected override void ExportToXml()
         {
             var walks = _walkService.GetWalksByOwnerId(_owner.Id);
             _serializationService.ExportToXml(walks, "walks_export.xml");
             StatusMessage = "Data exported to walks_export.xml";
         }
 
-        private void GenerateReport()
+        protected override void GenerateReport()
         {
             var walks = _walkService.GetWalksByOwnerId(_owner.Id);
             string report = _reportService.GenerateWalkReport(walks, _owner);
             _reportService.SaveReportToFile(report, "walk_report.txt");
             StatusMessage = "Report generated: walk_report.txt";
-        }
-
-        private void OnLogout()
-        {
-            AuthService.GetInstance().Logout();
-            LogoutRequested?.Invoke();
         }
     }
 }
