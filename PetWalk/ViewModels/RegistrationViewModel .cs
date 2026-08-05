@@ -134,7 +134,8 @@ namespace PetWalk.ViewModels
                     LastName = LastName,
                     Email = Email,
                     Password = Password,
-                    Phone = Phone
+                    Phone = Phone,
+                    Location = Location
                 };
             }
             else
