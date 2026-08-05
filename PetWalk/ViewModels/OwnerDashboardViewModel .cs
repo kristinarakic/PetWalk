@@ -411,6 +411,20 @@ namespace PetWalk.ViewModels
             var time = TimeSpan.Parse(SelectedTimeSlot);
             var scheduledDate = WalkDate.Date.Add(time);
 
+            // Check if owner already has a walk at that time
+            var ownerWalks = _walkService.GetWalksByOwnerId(_owner.Id);
+            bool ownerBusy = ownerWalks.Any(w =>
+                (w.Status == WalkStatus.Scheduled || w.Status == WalkStatus.Accepted || w.Status == WalkStatus.InProgress) &&
+                scheduledDate < w.ScheduledDate.AddMinutes(w.Duration) &&
+                scheduledDate.AddMinutes(WalkDuration) > w.ScheduledDate
+            );
+
+            if (ownerBusy)
+            {
+                StatusMessage = "You already have a walk scheduled at that time.";
+                return;
+            }
+
             decimal price = SelectedWalker.HourlyRate * (WalkDuration / 60.0m);
 
             var walk = _walkService.ScheduleWalk(

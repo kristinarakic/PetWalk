@@ -36,7 +36,12 @@ namespace PetWalk.ViewModels
         public string Email
         {
             get => _email;
-            set => SetProperty(ref _email, value);
+            set
+            {
+                SetProperty(ref _email, value);
+                ErrorMessage = string.Empty;
+                SuccessMessage = string.Empty;
+            }
         }
 
         public string Password
